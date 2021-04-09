@@ -1,0 +1,62 @@
+- hosts: localhost
+  vars_prompt:
+  - name: container_name
+    prompt: "Enter Docker Container Name :"
+    private: no
+  tasks:
+  - name: Configuring YUM for DOCKER..........
+    yum_repository:
+      name: docker
+      description: docker yum repository
+      baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+      gpgcheck: no
+
+  - name: "Installing Docker package"
+    package:
+      name: "docker-ce-3:18.09.1-3.el7"
+      state: present
+    ignore_errors: yes
+
+  - name: "Install docker lib by pip"
+    pip:
+      name: "docker"
+
+  - name: "Turning off SE-Linux"
+    selinux:
+      policy: targeted
+      state: permissive
+
+  - name: "Starting Docker Services"
+    service:
+      name: "docker"
+      state: started
+
+  - name: "Pulling Docker Image"
+    docker_image:
+      name: "vs14/centos7-ssh"
+      source: pull
+
+  - name: "Launching {{ container_name }} Container"
+    docker_container:
+      name: "{{ container_name }}"
+      image: "vs14/centos7-ssh"
+      interactive: yes
+      detach: yes
+      tty: yes
+      state: started
+      recreate: yes
+      ports:
+      - "1234:80"
+    register: container_info
+
+  - debug:
+       var: container_info.ansible_facts.docker_container.NetworkSettings.IPAddress 
+   
+  - name: "Retriveing IP dynamically and updating in inventory"
+    template:
+       src: "ip"
+       dest: "/etc/mydockerhost.txt"
+
+
+
+

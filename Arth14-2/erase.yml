@@ -1,0 +1,30 @@
+- hosts: localhost
+  tasks:
+  - name: Removing os..........
+    command: "docker rm -f $(docker ps -a -q )"
+    ignore_errors: yes
+  - name: Removing Images..........
+    command: "docker rmi -f $(docker images -a -q )"
+    ignore_errors: yes
+  - name: Removing YUM for DOCKER..........
+    command: "rm -rf /etc/yum.repos.d/docker.repo"
+  - name: "Deleting Docker package"
+    package:
+      name: "docker-ce"
+      state: absent
+    ignore_errors: yes
+  - name: "Deleting docker lib by pip"
+    pip:
+      name: "docker"
+      state: absent
+  - name: "Turning on SE-Linux"
+    selinux:
+      policy: targeted
+      state: enforcing
+
+  - name: Deleting mydockerhost File..........
+    command: "rm -rf /etc/mydockerhost.txt"
+
+  - name: Creating mydockerhost file..........
+    command: "touch /etc/mydockerhost.txt"
+

@@ -1,0 +1,15 @@
+     
+- hosts: docker
+  gather_facts: yes
+  tasks:
+  - name: "Installing httpd"
+    package:
+       name: "httpd"
+
+  - name: Creating HTML File Inside Document Root
+    copy: 
+      content: "<h1>Webserver successfully configured inside Docker container.</h1>"
+      dest: "/var/www/html/index.html"
+       
+  - name: "Starting Service"
+    command: "/usr/sbin/httpd"
